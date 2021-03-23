@@ -1,5 +1,6 @@
 productName: YouTube Music Desktop App
 appId: app.ytmd
+artifactName: ${productName}-${os}-${channel}.${ext}
 
 files:
   - '**/*'
@@ -34,6 +35,10 @@ electronDownload:
 
 win:
   icon: src/assets/favicon.ico
+  target:
+    - nsis
+    - portable
+    - zip
   publish:
     provider: generic
     url: 'https://dl.ytmdesktop.app/win'
@@ -45,6 +50,7 @@ mac:
   darkModeSupport: true
   target:
     - dmg
+    - zip
   publish:
     provider: generic
     url: 'https://dl.ytmdesktop.app/mac'
@@ -53,7 +59,14 @@ mac:
 linux:
   icon: src/assets/favicon.png
   category: AudioVideo
+  target:
+    - AppImage
+    - snap
+    - tar.gz
   publish:
     provider: generic
     url: 'https://dl.ytmdesktop.app/lin'
     channel: latest
+
+nsis:
+  artifactName: ${productName}-${os}-${channel}-Setup.${ext}
