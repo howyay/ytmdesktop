@@ -3,6 +3,7 @@ const isDev = require('electron-is-dev')
 const i18n = require('i18n')
 var http = require('https')
 var fs = require('fs')
+const fetch = require('node-fetch')
 const settingsProvider = require('./settingsProvider')
 
 const defaultLocale = settingsProvider.get('settings-app-language') || 'en'
@@ -29,26 +30,18 @@ var updateLocaleFile = function (locale, cb, force = false) {
         return
     }
     // console.log('downloading locale file for:' + locale);
-    dest = `${localesPath}/${locale}.json`
-    var file = fs.createWriteStream(dest)
-    var request = http
-        .get(
-            `https://raw.githubusercontent.com/ytmdesktop/ytmdesktop-locales/master/locales/${locale}.json`,
-            function (response) {
-                let body = ''
-                response.on('data', function (chunk) {
-                    body += chunk
-                })
-                response.on('end', function () {
-                    file.write(body)
-                    file.close()
-                })
-            }
-        )
-        .on('error', function (err) {
-            // Handle errors
-            fs.unlink(dest) // Delete the file async. (But we don't check the result)
-            if (cb) cb(err.message)
+    let dest = `${localesPath}/${locale}.json`
+    let url = `https://raw.githubusercontent.com/ytmdesktop/ytmdesktop-locales/master/locales/${locale}.json`
+
+    fetch(url)
+        .then((res) => res.json())
+        .then((json) => {
+            fs.writeFile(dest, JSON.stringify(json, null, 4), (err) => {
+                if (err) {
+                    throw err
+                }
+                console.log('JSON data is saved.')
+            })
         })
 }
 
