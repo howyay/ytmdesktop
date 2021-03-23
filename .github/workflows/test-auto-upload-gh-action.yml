@@ -1,9 +1,9 @@
-name: Nightly
+name: test-auto-upload-gh-actions
 
 on:
   push:
     branches:
-      - "development"
+      - "test-auto-upload-gh-actions"
   workflow_dispatch:
 
 jobs:
@@ -11,6 +11,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     strategy:
+      max-parallel: 1
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
 
@@ -30,12 +31,12 @@ jobs:
       - uses: ncipollo/release-action@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          name: Nightly Build
-          body: Latest Nightly build with adblocking, find historic versions in Action artifacts
+          name: test-auto-upload-gh-actions
+          body: test-auto-upload-gh-actions
           allowUpdates: true
           prerelease: false
           replacesArtifacts: true
-          tag: nightly
+          tag: test-auto-upload-gh-actions
           artifacts: >
             dist/*.dmg,
             dist/*.zip,
