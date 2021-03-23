@@ -1,0 +1,59 @@
+name: Nightly
+
+on:
+  push:
+    branches:
+      - "development"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup Node
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12
+      - run: yarn --frozen-lockfile
+      - uses: mingjun97/file-regex-replace@v1
+        with:
+          regex: '"version": "([0-9\.]*)"'
+          include: "^package.json"
+          replacement: '"version": "$1-nightly"'
+      - run: node ./script/publish-current-platform.js
+      - uses: ncipollo/release-action@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          name: Nightly Build
+          body: Latest Nightly build with adblocking, find historic versions in Action artifacts
+          allowUpdates: true
+          prerelease: false
+          replacesArtifacts: true
+          tag: nightly
+          artifacts: >
+            dist/*.dmg,
+            dist/*.zip,
+            dist/*.exe,
+            dist/*.AppImage,
+            dist/*.snap,
+            dist/*.tar.gz,
+            dist/*.blockmap,
+            dist/*.yml
+      - uses: actions/upload-artifact@v2
+        with:
+          name: dist-${{ matrix.os }}
+          path: |
+            dist/*.dmg,
+            dist/*.zip,
+            dist/*.exe,
+            dist/*.AppImage,
+            dist/*.snap,
+            dist/*.tar.gz,
+            dist/*.blockmap,
+            dist/*.yml
