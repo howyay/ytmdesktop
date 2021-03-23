@@ -1,6 +1,13 @@
 require('./src/utils/defaultSettings')
 
 const {
+    ElectronBlocker,
+    fullLists,
+    Request,
+} = require('@cliqz/adblocker-electron')
+const fetch = require('node-fetch')
+
+const {
     app,
     BrowserWindow,
     BrowserView,
@@ -106,7 +113,7 @@ app.commandLine.appendSwitch('disable-features', 'MediaSessionService') //This k
 if (!app.isDefaultProtocolClient('ytmd', process.execPath)) {
     app.setAsDefaultProtocolClient('ytmd', process.execPath)
 }
-    
+
 createCustomAppDir()
 
 createCustomCSSDir()
@@ -265,6 +272,36 @@ async function createWindow() {
             callback({ requestHeaders: newRequestHeaders })
         }
     )
+
+    const blocker = await ElectronBlocker.fromLists(fetch, fullLists, {
+        enableCompression: true,
+    })
+
+    blocker.enableBlockingInSession(mainWindow.webContents.session)
+
+    blocker.on('request-blocked', (request) => {
+        console.log('blocked', request.tabId, request.url)
+    })
+
+    blocker.on('request-redirected', (request) => {
+        console.log('redirected', request.tabId, request.url)
+    })
+
+    blocker.on('request-whitelisted', (request) => {
+        console.log('whitelisted', request.tabId, request.url)
+    })
+
+    blocker.on('csp-injected', (request) => {
+        console.log('csp', request.url)
+    })
+
+    blocker.on('script-injected', (script, url) => {
+        console.log('script', script.length, url)
+    })
+
+    blocker.on('style-injected', (style, url) => {
+        console.log('style', style.length, url)
+    })
 
     view = new BrowserView({
         webPreferences: {
@@ -2121,3 +2158,11 @@ const { ipcRenderer } = require('electron/renderer')
 analytics.setEvent('main', 'start', 'v' + app.getVersion(), app.getVersion())
 analytics.setEvent('main', 'os', process.platform, process.platform)
 analytics.setScreen('main')
+
+ElectronBlocker.fromPrebuiltAdsAndTracking(fetch)
+    .then((blocker) => {
+        blocker.enableBlockingInSession(session.defaultSession)
+    })
+    .catch((error) => {
+        console.log('Session is undefined')
+    })
