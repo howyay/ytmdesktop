@@ -49,11 +49,11 @@ jobs:
         with:
           name: dist-${{ matrix.os }}
           path: |
-            dist/*.dmg,
-            dist/*.zip,
-            dist/*.exe,
-            dist/*.AppImage,
-            dist/*.snap,
-            dist/*.tar.gz,
-            dist/*.blockmap,
+            dist/*.dmg
+            dist/*.zip
+            dist/*.exe
+            dist/*.AppImage
+            dist/*.snap
+            dist/*.tar.gz
+            dist/*.blockmap
             dist/*.yml
